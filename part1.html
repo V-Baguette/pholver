@@ -1,0 +1,241 @@
+<meta charset="utf-8">
+<title>Pholver Web Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a desktop-style window (title bar, file tabs, toolbar) over a canvas with floating Workspace and Properties panels, as in the supplied design map. */
+:root {
+  --backdrop: #1d1f21;
+  --blue-900: #0f3254;
+  --blue-700: #1f6fb2;
+  --blue-500: #3f8fd1;
+  --blue-300: #a9cdf2;
+  --blue-200: #cfe3f7;
+  --blue-100: #e8f0f6;
+  --purple-600: #6457a6;
+  --purple-300: #b7acdd;
+  --attention: #f29a1e;
+  --sky: var(--blue-300);
+  --sky-line: #86aedb;
+  --tab-idle: #8fb6df;
+  --slate: #2f4651;
+  --slate-hi: #3b5766;
+  --btn: #566f7e;
+  --btn-hi: #647f8f;
+  --steel: #7b9eb6;
+  --steel-deep: #6a8ea7;
+  --paper: #d2d3d4;
+  --ink: #14191d;
+  --on-dark: #f1f6fa;
+  --on-sky: #14202a;
+  --muted: #cfe0ec;
+  --r-1: 4px;
+  --r-2: 6px;
+  --r-3: 8px;
+  --r-4: 10px;
+  --ui: "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Roboto Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; padding: 16px; background: var(--backdrop); color: var(--on-sky); font: 14px/1.35 var(--ui); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue-700); outline-offset: 1px; }
+
+#app { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--paper); border-radius: var(--r-4); overflow: hidden; }
+#titlebar { flex: none; height: 24px; display: flex; align-items: center; padding: 0 12px; background: var(--sky); font-weight: 500; font-size: 13px; letter-spacing: .01em; }
+
+#tabs { flex: none; display: flex; align-items: flex-end; gap: 2px; height: 30px; background: var(--slate); overflow-x: auto; scrollbar-width: none; }
+#tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 6px 0 9px; background: var(--tab-idle); color: var(--on-sky); font-size: 13px; cursor: pointer; white-space: nowrap; border-radius: var(--r-2) var(--r-2) 0 0; }
+.tab.active { background: var(--sky); height: 28px; font-weight: 500; }
+.tab .tic svg { width: 14px; height: 14px; display: block; }
+.tab .tx { display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; background: none; border-radius: var(--r-1); }
+.tab .tx:hover { background: rgba(20, 32, 42, .15); }
+.tab .tx svg { width: 13px; height: 13px; }
+#newTab { flex: none; width: 28px; height: 26px; margin-left: 2px; border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; }
+#newTab:hover { color: #fff; }
+
+#toolbar { flex: none; display: flex; align-items: stretch; gap: 8px; padding: 6px 10px; background: var(--sky); border-bottom: 1px solid var(--sky-line); overflow-x: auto; }
+#toolbar [hidden] { display: none !important; }
+.sep { flex: none; width: 1px; margin: 4px 4px; background: var(--sky-line); }
+.tb { flex: none; width: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border: 0; border-radius: var(--r-3); background: var(--btn); color: var(--on-dark); font-size: 11.5px; line-height: 1.1; text-align: center; position: relative; }
+.tb:hover { background: var(--btn-hi); }
+.tb svg { width: 26px; height: 26px; display: block; }
+.tb[aria-pressed="true"], .tb.armed { background: var(--slate); box-shadow: inset 0 -3px 0 var(--blue-700); }
+.tb.armed { outline: 2px solid var(--blue-700); outline-offset: -2px; }
+.tb:disabled { opacity: .45; cursor: default; }
+.tbfield { flex: none; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 6px 12px; border-radius: var(--r-3); background: var(--btn); color: var(--on-dark); font-size: 11.5px; position: relative; }
+.tbfield select, .tbfield input { width: 84px; padding: 3px 9px; border: 0; border-radius: var(--r-1); background: var(--blue-100); color: var(--on-sky); font: 12.5px var(--mono); }
+.mode-btn { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 176px; padding: 0 20px; border: 0; border-radius: var(--r-4); background: var(--btn); color: var(--on-dark); font-size: 28px; font-weight: 500; }
+.mode-btn:hover { background: var(--btn-hi); }
+.mode-btn svg { width: 22px; height: 22px; fill: #0d1418; }
+
+#stage { position: relative; flex: 1; min-height: 0; }
+#cv, #cvEm { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: default; }
+#cv.panning { cursor: grabbing; }
+#cv.placing { cursor: crosshair; }
+#emFallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 40px; font-size: 14px; color: var(--muted, #889); pointer-events: none; }
+#emBoxSel { position: absolute; border: 1.5px solid var(--purple-600); background: rgba(100, 87, 166, .12); pointer-events: none; }
+#emRulerLabel { position: absolute; transform: translate(-50%, -100%); background: rgba(20,25,29,.85); color: var(--purple-300); font: 600 12.5px Roboto, sans-serif; padding: 4px 9px; border-radius: var(--r-1); white-space: pre; pointer-events: none; text-align: center; }
+
+.panel { position: absolute; background: var(--steel); color: var(--on-dark); border-radius: var(--r-4); overflow: hidden; box-shadow: 0 2px 8px rgba(20, 32, 42, .25); }
+.panel-h { display: flex; align-items: center; min-height: 38px; padding: 0 18px; background: var(--steel-deep); font-size: 17px; cursor: pointer; user-select: none; }
+#ws { left: 10px; top: 10px; width: 230px; max-height: calc(100% - 66px); display: flex; flex-direction: column; }
+#ws .panel-h { justify-content: space-between; }
+#wsCount { font: 12px var(--mono); opacity: .8; }
+#wsList { padding: 8px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+.item { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; background: var(--blue-500); border: 2px solid transparent; border-radius: var(--r-3); font-size: 16px; cursor: pointer; min-width: 0; }
+.item:hover { background: #4c9bda; }
+.item.sel { border-color: var(--blue-700); }
+.item .ic svg { width: 18px; height: 18px; display: block; }
+.item .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .x { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: var(--r-1); background: none; opacity: 0; }
+.item:hover .x, .item.sel .x { opacity: .85; }
+.item .x:hover { background: rgba(20, 32, 42, .2); opacity: 1; }
+.item .x svg { width: 13px; height: 13px; }
+.panel.collapsed .panel-body, .panel.collapsed #wsList { display: none; }
+
+#props { right: 10px; top: 10px; width: 276px; max-height: calc(100% - 112px); display: flex; flex-direction: column; }
+#props.sel { box-shadow: 0 0 0 2px var(--blue-700), 0 2px 8px rgba(20, 32, 42, .25); }
+#props .panel-h { justify-content: flex-end; background: var(--slate); font-size: 16px; }
+#propsBody { padding: 6px 16px 16px; overflow-y: auto; }
+.sect { margin: 12px 0 4px; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.row { display: grid; grid-template-columns: 1fr 104px; align-items: center; gap: 10px; margin: 4px 0; font-size: 15px; position: relative; }
+.row label { min-width: 0; }
+.row .u { font: 11px var(--mono); opacity: .75; margin-left: 4px; }
+.row input[type=number], .row input[type=text] { width: 100%; min-width: 0; padding: 5px 11px; border: 0; border-radius: var(--r-1); background: var(--blue-100); color: var(--on-sky); font: 13px var(--mono); text-align: right; }
+.row input[type=text] { text-align: left; font-family: var(--ui); }
+.row input[readonly] { background: #aebfcb; color: #31424e; }
+.row.check { grid-template-columns: 1fr auto; }
+.row.check input { width: 18px; height: 18px; accent-color: var(--slate); }
+.row .btn2 { grid-column: 1 / -1; padding: 8px 10px; border: 0; border-radius: var(--r-2); background: var(--slate); color: var(--on-dark); font-size: 13px; }
+.row .btn2:hover { background: var(--slate-hi); }
+.live { margin-top: 10px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, .25); }
+.empty { margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
+.note { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+
+#scale { position: absolute; right: 14px; bottom: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font: 12px var(--mono); color: #2b3a45; pointer-events: none; }
+#sbRow { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+#sbBar { height: 8px; border: 2px solid #2b3a45; border-top: 0; width: 100px; }
+#status { position: absolute; left: 10px; bottom: 12px; padding: 7px 16px; background: rgba(47, 70, 81, .92); color: var(--on-dark); border-radius: var(--r-2); font: 12px var(--mono); font-variant-numeric: tabular-nums; max-width: calc(100% - 180px); }
+#hint { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); width: max-content; pointer-events: none; padding: 8px 18px; background: var(--attention); color: #20150a; border-radius: var(--r-3); font-size: 13px; font-weight: 500; text-align: center; max-width: calc(100% - 20px); }
+
+.menu { position: absolute; z-index: 20; min-width: 190px; padding: 8px; background: var(--slate); color: var(--on-dark); border-radius: var(--r-4); box-shadow: 0 6px 20px rgba(0, 0, 0, .35); }
+.menu button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: var(--r-2); background: none; color: inherit; text-align: left; font-size: 15px; }
+.menu button:hover, .menu button.cur { background: var(--slate-hi); }
+.menu button .k { margin-left: auto; font: 11px var(--mono); opacity: .65; }
+.menu button .sub { display: block; font-size: 11.5px; opacity: .7; }
+.menu button svg { width: 24px; height: 24px; flex: none; }
+.menu[hidden] { display: none; }
+#tray { min-width: 150px; }
+#tray button { flex-direction: column; gap: 3px; padding: 10px; font-size: 13px; text-align: center; border-radius: var(--r-3); }
+#tray button:last-child { border-bottom: 0; }
+#tray button svg { width: 34px; height: 34px; }
+#cxTray { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; min-width: 340px; }
+#cxTray[hidden] { display: none; }
+#cxTray button { padding: 8px 10px; font-size: 14px; }
+#cxTray button svg { width: 30px; height: 30px; }
+.row select { width: 100%; min-width: 0; padding: 5px 11px; border: 0; border-radius: var(--r-1); background: var(--blue-100); color: var(--on-sky); font: 13px var(--ui); }
+.row select:disabled { background: #aebfcb; color: #31424e; }
+
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%) translateY(2px);
+  width: max-content; max-width: 220px; padding: 6px 10px; border-radius: var(--r-2);
+  background: var(--blue-900); color: var(--on-dark); font: 12px/1.3 var(--ui); font-weight: 400; text-align: left; letter-spacing: normal; text-transform: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); pointer-events: none; z-index: 30;
+  opacity: 0; visibility: hidden; transition: opacity .12s ease, transform .12s ease, visibility .12s;
+  transition-delay: 0s, 0s, 0s;
+}
+[data-tip]:hover::after, [data-tip]:focus-within::after {
+  opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+  transition-delay: .45s, .45s, .45s;
+}
+
+@media (max-width: 760px) {
+  .mode-btn { width: 132px; font-size: 22px; padding: 0 12px; }
+  #ws { width: 170px; }
+  #props { width: 210px; }
+  .panel-h { font-size: 15px; }
+  .row { grid-template-columns: 1fr 84px; font-size: 14px; }
+  #status { max-width: calc(100% - 20px); bottom: 54px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div id="app" data-mode="design" data-kind="mech">
+  <div id="titlebar">Pholver Web Edition</div>
+  <div id="tabs" role="tablist" aria-label="Open files"></div>
+
+  <div id="toolbar" role="toolbar" aria-label="Main toolbar">
+    <button class="mode-btn" id="modeBtn" aria-haspopup="menu"><span id="modeLabel">Design</span><svg viewBox="0 0 24 24"><path d="M3 6h18L12 20z"/></svg></button>
+
+    <button class="tb" id="inclineBtn" data-modes="design" title="Add an inclined plane"><span data-ic="incline"></span>Inclined Plane</button>
+    <button class="tb" id="objBtn" data-modes="design" aria-haspopup="menu" title="Add an object"><span data-ic="objects"></span>Objects</button>
+    <button class="tb" id="cxBtn" data-modes="design" aria-haspopup="menu" title="Add springs, ropes, rods, chains and joints"><span data-ic="conn"></span>Connectors</button>
+    <span class="sep" data-modes="design"></span>
+    <button class="tb" id="selBtn" data-kind="mech em ckt" data-modes="design" title="Select and move. Shift-drag selects an area, Shift-click adds one. Ctrl+C / Ctrl+V copy and paste. [ and ] rotate by 15 degrees."><span data-ic="select"></span>Select</button>
+    <button class="tb" id="undoBtn" data-kind="mech em ckt" data-modes="design" title="Undo (Ctrl+Z)"><span data-ic="undo"></span>Undo</button>
+    <button class="tb" id="redoBtn" data-kind="mech em ckt" data-modes="design" title="Redo (Ctrl+Y or Ctrl+Shift+Z)"><span data-ic="redo"></span>Redo</button>
+    <button class="tb" id="dupBtn" data-kind="mech em ckt" data-modes="design" title="Duplicate the selection (Ctrl+D)"><span data-ic="dup"></span>Duplicate</button>
+    <button class="tb" id="delBtn" data-kind="mech em ckt" data-modes="design" title="Delete selected object (Del)"><span data-ic="del"></span>Delete</button>
+    <span class="sep" data-modes="design"></span>
+    <button class="tb" id="snapBtn" data-kind="mech em" data-modes="design" aria-pressed="true" title="Snap to grid"><span data-ic="snap"></span>Snap</button>
+    <label class="tbfield" data-kind="mech em" data-modes="design" data-tip="How far new objects snap when you place or drag them.">Grid size<select id="gridSel"><option value="0.1">0.1 m</option><option value="0.25" selected>0.25 m</option><option value="0.5">0.5 m</option><option value="1">1 m</option></select></label>
+
+    <button class="tb" id="playBtn" data-kind="mech em ckt" data-modes="sim render" title="Play or pause (Space)"><span data-ic="play"></span><span id="playLbl">Play</span></button>
+    <button class="tb" id="stepBtn" data-kind="mech em ckt" data-modes="sim" title="Advance 1/60 s"><span data-ic="step"></span>Step</button>
+    <button class="tb" id="resetBtn" data-kind="mech em ckt" data-modes="sim render" title="Back to the designed start (R)"><span data-ic="reset"></span>Reset</button>
+    <span class="sep" data-modes="sim render"></span>
+    <button class="tb" id="grabBtn" data-modes="sim render" title="Drag objects with the mouse. Free objects move freely, constrained ones follow their joints."><span data-ic="grab"></span>Grab</button>
+    <button class="tb" id="pushBtn" data-modes="sim render" title="Press on an object and drag toward the direction of the force"><span data-ic="push"></span>Push</button>
+    <label class="tbfield" data-modes="sim render">Push force N<input id="pushF" type="number" step="5" min="0" value="50"></label>
+    <span class="sep" data-modes="sim render"></span>
+    <label class="tbfield" data-kind="mech em ckt" data-modes="sim">Speed<select id="speedSel"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select></label>
+    <label class="tbfield" data-modes="sim">Gravity m/s²<input id="gIn" type="number" step="0.01" value="9.81"></label>
+    <button class="tb" id="groundBtn" data-modes="sim" aria-pressed="true" title="Floor at y = 0"><span data-ic="ground"></span>Ground</button>
+    <button class="tb" id="vecBtn" data-kind="mech em" data-modes="sim render" aria-pressed="true" title="Velocity arrows"><span data-ic="vec"></span>Velocity</button>
+    <button class="tb" id="trailBtn" data-kind="mech em" data-modes="sim render" aria-pressed="false" title="Motion trails"><span data-ic="trail"></span>Trails</button>
+    <button class="tb" id="gridBtn" data-kind="mech em ckt" data-modes="sim render" aria-pressed="true" title="Show grid"><span data-ic="snap"></span>Grid</button>
+    <button class="tb" id="shadeBtn" data-modes="render" aria-pressed="true" title="Shaded surfaces"><span data-ic="shade"></span>Shading</button>
+    <label class="tbfield" data-kind="mech em ckt" data-modes="render">Background<select id="bgSel"><option value="paper">Paper</option><option value="graphite">Graphite</option><option value="blueprint">Blueprint</option></select></label>
+
+    <span class="sep" data-modes="design sim render"></span>
+    <button class="tb" id="saveBtn" data-kind="mech em ckt" data-modes="design sim render" title="Save this design to a file"><span data-ic="save"></span>Save</button>
+    <button class="tb" id="openBtn" data-kind="mech em ckt" data-modes="design sim render" title="Open a saved design in a new tab"><span data-ic="open"></span>Open</button>
+    <input type="file" id="openFile" accept=".json,application/json" hidden>
+    <button class="tb" id="fitBtn" data-kind="mech em ckt" data-modes="design sim render" title="Frame all objects"><span data-ic="fit"></span>Fit view</button>
+  </div>
+
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <canvas id="cvEm" hidden></canvas>
+    <div id="emFallback" hidden>E&amp;M is being rebuilt in 3D — check back soon.</div>
+    <div id="emBoxSel" hidden></div>
+    <div id="emRulerLabel" hidden></div>
+
+    <div class="panel" id="ws">
+      <div class="panel-h" id="wsHead"><span>Workspace</span><span id="wsCount">0</span></div>
+      <div id="wsList"></div>
+    </div>
+
+    <div class="panel" id="props">
+      <div class="panel-h" id="propsHead"><span id="propsTitle">Properties</span></div>
+      <div class="panel-body" id="propsBody"></div>
+    </div>
+
+    <div id="hint" hidden></div>
+    <div id="status"></div>
+    <div id="scale"><div id="coords"></div><div id="sbRow"><span id="sbLabel">1 m</span><div id="sbBar"></div></div><div id="zoomTxt"></div></div>
+  </div>
+
+  <div class="menu" id="modeMenu" hidden role="menu"></div>
+  <div class="menu" id="tray" hidden role="menu"></div>
+  <div class="menu" id="cxTray" hidden role="menu"></div>
+</div>

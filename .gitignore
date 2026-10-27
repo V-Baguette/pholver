@@ -1,0 +1,7 @@
+.archive/
+*.bak*
+shot_*.png
+__pycache__/
+node_modules/
+_saved.json
+_saved_em.json

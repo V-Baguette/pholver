@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(./build.sh)", "Bash(./run_all.sh*)", "Bash(node test*.js)", "Bash(node cert.js)", "Bash(python3 e2e*.py)", "Bash(node --check *)"]
+  }
+}
