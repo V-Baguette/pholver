@@ -7,6 +7,6 @@
     "build": "./build.sh",
     "test": "./run_all.sh quick",
     "certify": "./run_all.sh",
-    "cert": "node cert.js"
+    "cert": "node tests/cert.js"
   }
 }

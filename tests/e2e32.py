@@ -1,0 +1,35 @@
+import asyncio, json
+from playwright.async_api import async_playwright
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); pg=await (await b.new_context(viewport={'width':1440,'height':860})).new_page()
+        errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))
+        await pg.goto('file://'+__import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__)))+'/pholver.html'); await pg.wait_for_timeout(700)
+        await pg.evaluate('''(()=>{const d=window.__pholver.cur,w=d.world;w.bodies.length=0;w.joints.length=0;w.links.length=0;d.view=null;w.ground=false;})()''')
+        await pg.wait_for_timeout(300)
+        box=await pg.locator('#cv').bounding_box()
+        v=await pg.evaluate('(()=>{const v=window.__pholver.cur.view;return [v.ox,v.oy,v.s]})()')
+        W=lambda x,y:(box['x']+v[0]+x*v[2], box['y']+v[1]-y*v[2])
+        async def click(x,y): await pg.mouse.click(*W(x,y)); await pg.wait_for_timeout(80)
+        async def obj(t,x,y): await pg.click('#objBtn'); await pg.click('[role=menuitem][data-t=%s]'%t); await click(x,y)
+        r={}
+        # wheel with a wide block hanging from both sides of it (same object at both rope ends)
+        await obj('wheel',0,3); await obj('rect',0,1.2)
+        r['bodies']=await pg.evaluate('window.__pholver.cur.world.bodies.map(b=>b.kind+" "+b.x.toFixed(2)+","+b.y.toFixed(2)+" w"+(b.W||b.base)).join(" | ")')
+        top=await pg.evaluate('(()=>{const b=window.__pholver.cur.world.bodies[1];return [b.y+ (b.H||b.height)/2, (b.W||b.base)/2]})()')
+        await pg.click('#cxBtn'); await pg.click('#cxTray [data-t=rope]')
+        await click(-0.4,top[0]); await click(0,3.0); await click(0.4,top[0])
+        r['joints']=await pg.evaluate('window.__pholver.cur.world.joints.map(j=>j.type+" wh"+(j.wh?j.wh.length:0)+" a:"+(j.a&&j.a.kind)+" b:"+(j.b&&j.b.kind)).join(" | ")')
+        # switch the type with the panel
+        await pg.evaluate('window.__pholver.select(window.__pholver.cur.world.joints[0].id)'); await pg.wait_for_timeout(200)
+        await pg.locator('#props select').first.select_option(label='Extensible'); await pg.wait_for_timeout(150)
+        r['ext']=await pg.evaluate('(()=>{const j=window.__pholver.cur.world.joints[0];return [j.type,j.ext,j.wh.length,j.k]})()')
+        r['fields']=await pg.evaluate('["Stiffness k","Damping c"].map(t=>document.querySelector("#props").innerText.includes(t))')
+        await pg.locator('#props select').first.select_option(label='Inextensible'); await pg.wait_for_timeout(150)
+        r['back']=await pg.evaluate('(()=>{const j=window.__pholver.cur.world.joints[0];return [j.type,j.ext,j.wh.length]})()')
+        await pg.locator('#props select').first.select_option(label='Extensible'); await pg.wait_for_timeout(150)
+        await pg.evaluate('window.__pholver.setMode("sim")'); await pg.wait_for_timeout(2500)
+        r['sim']=await pg.evaluate('window.__pholver.cur.world.bodies.map(b=>b.kind+" y"+b.y.toFixed(2)).join(" | ")')
+        await pg.screenshot(path='shot_samerope.png')
+        print(json.dumps(r),errs); await b.close()
+asyncio.run(main())

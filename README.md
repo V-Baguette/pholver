@@ -2,6 +2,8 @@
 
 A 2D physics sandbox with Mechanics, E&M and Circuit tabs. Open `pholver.html` in a browser; nothing else is needed.
 
+See [`TUTORIAL.md`](TUTORIAL.md) for a walkthrough of every tool and object type across all three tabs.
+
 ```
 ./build.sh          # regenerate pholver.html
 ./run_all.sh quick  # syntax + build + Node tests (seconds)

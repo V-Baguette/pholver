@@ -29,9 +29,9 @@ Full 3D engine: positions/fields are vec3, orientation is a quaternion (property
 Each tab is a *document* with its own canvas drawing, tool state, property panel and field panel. Shared helpers: `P.mkHelpers` (`sect/num/select/check/note/button`), `P.flash`, `P.select`, `P.checkpoint` (undo). Circuit UI: `PARTS` tray, `ICON`, `drawPart` (local frame, y down), `siRow`/`liveRow` property rows, `drawFields`, `flowGraph/updateFlow/drawFlow` (current dots), scope history.
 
 ## Tests
-- `test*.js`: engine invariants and analytic checks (rolling disc, cyclotron, RC/RLC, diode/BJT/MOSFET/op-amp operating points...).
-- `cert.js`: presets, save/load round trips, random resistor networks (KCL and power balance), determinism, mechanics fuzz.
-- `e2e*.py`: Playwright UI flows against `pholver.html`. `e2e5.py` is the broad smoke test.
+- `tests/test*.js`: engine invariants and analytic checks (rolling disc, cyclotron, RC/RLC, diode/BJT/MOSFET/op-amp operating points...).
+- `tests/cert.js`: presets, save/load round trips, random resistor networks (KCL and power balance), determinism, mechanics fuzz.
+- `tests/e2e*.py`: Playwright UI flows against `pholver.html`. `tests/e2e5.py` is the broad smoke test.
 - `./run_all.sh` runs everything.
 
 ## Porting to the Rust app

@@ -6,7 +6,7 @@ This repo is the **web prototype** (plain JS, no dependencies, ships as one self
 ## Commands
 - `./build.sh` assembles `pholver.html` (full app) and `pholver-mechanics.html`. Run it after every edit.
 - `./run_all.sh` full certification (syntax, build, all Node tests, `cert.js`, every Playwright e2e). `./run_all.sh quick` skips the browser tests. **Must end with `0 failed` before you call anything done.**
-- `node test_xxx.js` / `python3 e2eNN.py` run a single test. Tests must be run from this directory.
+- `node tests/test_xxx.js` / `python3 tests/e2eNN.py` run a single test, from the project root (not from inside `tests/`).
 - Playwright is already installed (Chromium). Do not run `playwright install`.
 
 ## Source of truth vs generated files (important)
@@ -24,7 +24,7 @@ Never hand-edit generated files: `joints.js` (concatenation of `src/j1.js src/j3
 - New ideas that belong to the Rust app go in `IDEAS.md`, not in the web code.
 
 ## Layout
-See `ARCHITECTURE.md`. Short version: `engine.js` (rigid-body solver) + `src/j*.js` (joints) + `scene.js` (scene model, save/load); `em.js`; `ckt.js` (circuit engine); `ui*.js` (canvas UI per tab); `test*.js`, `cert.js`, `e2e*.py` (tests); `.archive/` (old backups and screenshots, ignore).
+See `ARCHITECTURE.md`. Short version: `engine.js` (rigid-body solver) + `src/j*.js` (joints) + `scene.js` (scene model, save/load); `em.js`; `ckt.js` (circuit engine); `ui*.js` (canvas UI per tab); `tests/` (`test*.js`, `cert.js`, `e2e*.py`); `.archive/` (old backups and screenshots, ignore).
 
 ## Git
-Not a git repo yet. When it becomes one: commit only on request; end commit messages with the attribution lines your session instructions give.
+Repo is at https://github.com/V-Baguette/pholver. Commit only on request; end commit messages with the attribution lines your session instructions give.
